@@ -48,6 +48,7 @@ app.use('/taches', require('./routes/api/taches'));
 app.use('/famille-utilisateurs', require('./routes/api/famille'));
 app.use('/entete-taches', require('./routes/api/enteteTaches'));
 app.use('/details-taches', require('./routes/api/detailsTaches'));
+app.use('/dashboard', require('./routes/api/dashboard'));
 
 //Verify the token
 app.use(verifyJWT);

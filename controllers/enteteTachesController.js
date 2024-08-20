@@ -37,18 +37,35 @@ const getEnteteTacheById = async (req, res) => {
   }
 };
 
-// Create a new EnteteTache
 const createEnteteTache = async (req, res) => {
   const { LibelleJournee, UtilisateurID, DateOperation, Remarques } = req.body;
   try {
     const pool = await poolPromise;
-    await pool.request()
+    const result = await pool.request()
       .input('LibelleJournee', sql.NVarChar, LibelleJournee)
       .input('UtilisateurID', sql.Int, UtilisateurID)
       .input('DateOperation', sql.DateTime, DateOperation)
       .input('Remarques', sql.NVarChar, Remarques)
-      .query('INSERT INTO EnteteTache (LibelleJournee, UtilisateurID, DateOperation, Remarques) VALUES (@LibelleJournee, @UtilisateurID, @DateOperation, @Remarques)');
-    res.status(201).json({ message: 'EnteteTache created' });
+      .query(`
+        DECLARE @InsertedEnteteTache TABLE (
+          EnteteTacheID INT,
+          LibelleJournee NVARCHAR(255),
+          UtilisateurID INT,
+          DateOperation DATETIME,
+          Remarques NVARCHAR(MAX)
+        );
+
+        INSERT INTO EnteteTache (LibelleJournee, UtilisateurID, DateOperation, Remarques)
+        OUTPUT INSERTED.EnteteTacheID, INSERTED.LibelleJournee, INSERTED.UtilisateurID, INSERTED.DateOperation, INSERTED.Remarques
+        INTO @InsertedEnteteTache
+        VALUES (@LibelleJournee, @UtilisateurID, @DateOperation, @Remarques);
+
+        SELECT * FROM @InsertedEnteteTache;
+      `);
+
+    const newEnteteTache = result.recordset[0];
+    console.log(newEnteteTache);
+    res.status(201).json({ message: 'Entête de tâche créée avec succès', EnteteTache: newEnteteTache });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,9 +1,6 @@
 const { poolPromise, sql } = require('../utils/poolPromise');
 
-const ROLES_LIST = require('../config/roles_list');
-const bcrypt = require('bcrypt');
-const { handleNewUser } = require('./registerController')
-const { hashPassword } = require('../utils/hashPassword');
+
 
 const getAllUsers = async (req, res) => {
   try {

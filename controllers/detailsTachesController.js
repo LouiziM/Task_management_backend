@@ -88,7 +88,7 @@ const createDetailsTache = async (req, res) => {
       .input('Remarques', sql.NVarChar, DetailRemarques)
       .query('INSERT INTO DetailsTache (EnteteTacheID, TacheID, HDebut, HFin, TempsDiff, Coefficient, PrixCalc, Remarques) VALUES (@EnteteTacheID, @TacheID, @HDebut, @HFin, @TempsDiff, @Coefficient, @PrixCalc, @Remarques)');
 
-    res.status(201).json({ message: 'DetailsTache created' });
+    res.status(201).json({ message: 'Détails-tâche créés' });
   } catch (err) {
     console.log(err)
 
@@ -114,7 +114,7 @@ const updateDetailsTache = async (req, res) => {
       .input('PrixCalc', sql.Decimal, PrixCalc)
       .input('Remarques', sql.NVarChar, DetailRemarques) 
       .query('UPDATE DetailsTache SET TacheID = @TacheID, HDebut = @HDebut, HFin = @HFin, TempsDiff = @TempsDiff, Coefficient = @Coefficient, PrixCalc = @PrixCalc, Remarques = @Remarques WHERE DetailsTacheID = @DetailsTacheID');
-    res.status(200).json({ message: 'DetailsTache updated' });
+    res.status(200).json({ message: 'Détails-tâche mis à jour' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -129,7 +129,7 @@ const deleteDetailsTache = async (req, res) => {
     await pool.request()
       .input('DetailsTacheID', sql.Int, req.params.id)
       .query('DELETE FROM DetailsTache WHERE DetailsTacheID = @DetailsTacheID');
-    res.status(200).json({ message: 'DetailsTache deleted' });
+    res.status(200).json({ message: 'Détails-tâche supprimés' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -83,7 +83,7 @@ const updateEnteteTache = async (req, res) => {
       .input('DateOperation', sql.DateTime, DateOperation)
       .input('Remarques', sql.NVarChar, Remarques)
       .query('UPDATE EnteteTache SET LibelleJournee = @LibelleJournee, UtilisateurID = @UtilisateurID, DateOperation = @DateOperation, Remarques = @Remarques WHERE EnteteTacheID = @EnteteTacheID');
-    res.status(200).json({ message: 'EnteteTache updated' });
+    res.status(200).json({ message: 'Entête de tâche mis à jour' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -96,7 +96,7 @@ const deleteEnteteTache = async (req, res) => {
     await pool.request()
       .input('EnteteTacheID', sql.Int, req.params.id)
       .query('DELETE FROM EnteteTache WHERE EnteteTacheID = @EnteteTacheID');
-    res.status(200).json({ message: 'EnteteTache deleted' });
+    res.status(200).json({ message: 'Entête de tâche supprimée' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

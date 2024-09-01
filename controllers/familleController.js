@@ -7,7 +7,7 @@ const getFamilleUtilisateurs = async (req, res) => {
     const result = await pool.request().query('SELECT * FROM FamilleUtilisateur');
     res.status(200).json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
@@ -20,7 +20,7 @@ const getFamilleUtilisateurById = async (req, res) => {
       .query('SELECT * FROM FamilleUtilisateur WHERE FamilleUtilisateurID = @FamilleUtilisateurID');
     res.status(200).json(result.recordset[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
@@ -34,10 +34,9 @@ const createFamilleUtilisateur = async (req, res) => {
       .input('Coefficient', sql.Int, Coefficient)
       .input('Remarques', sql.NVarChar, Remarques)
       .query('INSERT INTO FamilleUtilisateur (LibelleFamille, Coefficient, Remarques) VALUES (@LibelleFamille, @Coefficient, @Remarques)');
-      console.log(req.body)
-    res.status(201).json({ message: 'FamilleUtilisateur created' });
+    res.status(201).json({ message: 'FamilleUtilisateur créée' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
@@ -52,22 +51,32 @@ const updateFamilleUtilisateur = async (req, res) => {
       .input('Coefficient', sql.Int, Coefficient)
       .input('Remarques', sql.NVarChar, Remarques)
       .query('UPDATE FamilleUtilisateur SET LibelleFamille = @LibelleFamille, Coefficient = @Coefficient, Remarques = @Remarques WHERE FamilleUtilisateurID = @FamilleUtilisateurID');
-    res.status(200).json({ message: 'FamilleUtilisateur updated' });
+    res.status(200).json({ message: 'FamilleUtilisateur mise à jour' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
 // Delete a FamilleUtilisateur by ID
 const deleteFamilleUtilisateur = async (req, res) => {
+  const familleUtilisateurId = req.params.id;
+  const pool = await poolPromise;
+
   try {
-    const pool = await poolPromise;
+    // Delete associated Utilisateurs
     await pool.request()
-      .input('FamilleUtilisateurID', sql.Int, req.params.id)
+      .input('FamilleUtilisateurID', sql.Int, familleUtilisateurId)
+      .query('DELETE FROM Utilisateurs WHERE FamilleUtilisateurID = @FamilleUtilisateurID');
+
+    // Delete the FamilleUtilisateur
+    await pool.request()
+      .input('FamilleUtilisateurID', sql.Int, familleUtilisateurId)
       .query('DELETE FROM FamilleUtilisateur WHERE FamilleUtilisateurID = @FamilleUtilisateurID');
-    res.status(200).json({ message: 'FamilleUtilisateur deleted' });
+
+    res.status(200).json({ message: 'FamilleUtilisateur et Utilisateurs associés supprimés' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Rollback transaction in case of error
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 

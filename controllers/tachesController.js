@@ -35,10 +35,9 @@ const getAllTachesWithDetails = async (req, res) => {
     const result = await pool.request().query(query);
     res.status(200).json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
-
 
 // Get all Taches
 const getTaches = async (req, res) => {
@@ -47,7 +46,7 @@ const getTaches = async (req, res) => {
     const result = await pool.request().query('SELECT * FROM Tache');
     res.status(200).json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
@@ -60,7 +59,7 @@ const getTacheById = async (req, res) => {
       .query('SELECT * FROM Tache WHERE TacheID = @TacheID');
     res.status(200).json(result.recordset[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
@@ -74,16 +73,15 @@ const createTache = async (req, res) => {
       .input('Coefficient', sql.Int, Coefficient)
       .input('Remarques', sql.NVarChar, Remarques)
       .query('INSERT INTO Tache (LibelleTache, Coefficient, Remarques) VALUES (@LibelleTache, @Coefficient, @Remarques)');
-    res.status(201).json({ message: 'Tache created' });
+    res.status(201).json({ message: 'Tâche créée' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
 // Update a Tache by ID
 const updateTache = async (req, res) => {
   const { LibelleTache, Coefficient, Remarques } = req.body;
-  console.log("update tache",req.body)
   try {
     const pool = await poolPromise;
     await pool.request()
@@ -92,25 +90,35 @@ const updateTache = async (req, res) => {
       .input('Coefficient', sql.Int, Coefficient)
       .input('Remarques', sql.NVarChar, Remarques)
       .query('UPDATE Tache SET LibelleTache = @LibelleTache, Coefficient = @Coefficient, Remarques = @Remarques WHERE TacheID = @TacheID');
-    res.status(200).json({ message: 'Tache updated' });
+    res.status(200).json({ message: 'Tâche mise à jour' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
 // Delete a Tache by ID
 const deleteTache = async (req, res) => {
+  const tacheId = req.params.id;
+  const pool = await poolPromise;
+
   try {
-    const pool = await poolPromise;
+    // Delete associated DetailsTache entries
     await pool.request()
-      .input('TacheID', sql.Int, req.params.id)
+      .input('TacheID', sql.Int, tacheId)
+      .query('DELETE FROM DetailsTache WHERE TacheID = @TacheID');
+
+    // Delete the Tache
+    await pool.request()
+      .input('TacheID', sql.Int, tacheId)
       .query('DELETE FROM Tache WHERE TacheID = @TacheID');
-    res.status(200).json({ message: 'Tache deleted' });
+
+    res.status(200).json({ message: 'Tâche et détails associés supprimés' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
+// Get Tache by Date
 const getTacheByDate = async (req, res) => {
   try {
     const { date } = req.params;
@@ -152,8 +160,8 @@ const getTacheByDate = async (req, res) => {
     
     res.status(200).json(result.recordset);
   } catch (err) {
-    console.error("Error:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error("Erreur :", err.message);
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
@@ -164,6 +172,5 @@ module.exports = {
   updateTache,
   deleteTache,
   getAllTachesWithDetails,
-  getTacheByDate ,
-  
+  getTacheByDate,
 };

@@ -22,10 +22,9 @@ const getUtilisateurs = async (req, res) => {
     const result = await pool.request().query(query);
     res.status(200).json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
-
 
 // Get a single Utilisateur by ID
 const getUtilisateurById = async (req, res) => {
@@ -36,14 +35,13 @@ const getUtilisateurById = async (req, res) => {
       .query('SELECT * FROM Utilisateurs WHERE UtilisateurID = @UtilisateurID');
     res.status(200).json(result.recordset[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
 // Create a new Utilisateur
 const createUtilisateur = async (req, res) => {
   const { Nom, Age, Email, FamilleUtilisateurID } = req.body;
-  console.log(req.body)
   try {
     const pool = await poolPromise;
     await pool.request()
@@ -52,9 +50,9 @@ const createUtilisateur = async (req, res) => {
       .input('Email', sql.NVarChar, Email)
       .input('FamilleUtilisateurID', sql.Int, FamilleUtilisateurID)
       .query('INSERT INTO Utilisateurs (Nom, Age, Email, FamilleUtilisateurID) VALUES (@Nom, @Age, @Email, @FamilleUtilisateurID)');
-    res.status(201).json({ message: 'Utilisateur created' });
+    res.status(201).json({ message: 'Utilisateur créé' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
@@ -70,22 +68,31 @@ const updateUtilisateur = async (req, res) => {
       .input('Email', sql.NVarChar, Email)
       .input('FamilleUtilisateurID', sql.Int, FamilleUtilisateurID)
       .query('UPDATE Utilisateurs SET Nom = @Nom, Age = @Age, Email = @Email, FamilleUtilisateurID = @FamilleUtilisateurID WHERE UtilisateurID = @UtilisateurID');
-    res.status(200).json({ message: 'Utilisateur updated' });
+    res.status(200).json({ message: 'Utilisateur mis à jour' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
 // Delete a Utilisateur by ID
 const deleteUtilisateur = async (req, res) => {
+  const utilisateurId = req.params.id;
+  const pool = await poolPromise;
+
   try {
-    const pool = await poolPromise;
+    // Delete associated EnteteTaches
     await pool.request()
-      .input('UtilisateurID', sql.Int, req.params.id)
+      .input('UtilisateurID', sql.Int, utilisateurId)
+      .query('DELETE FROM EnteteTache WHERE UtilisateurID = @UtilisateurID');
+
+    // Delete the Utilisateur
+    await pool.request()
+      .input('UtilisateurID', sql.Int, utilisateurId)
       .query('DELETE FROM Utilisateurs WHERE UtilisateurID = @UtilisateurID');
-    res.status(200).json({ message: 'Utilisateur deleted' });
+
+    res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Erreur : ' + err.message });
   }
 };
 
